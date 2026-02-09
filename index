@@ -1,0 +1,707 @@
+<!-- student-spinner.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Name Spinner - Legacy High School</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .upload-section input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .template-btn {
+            background: #48c774;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            margin-left: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .template-btn:hover {
+            background: #3eb864;
+            transform: translateY(-1px);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        select, input[type="text"] {
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 500px;
+            height: 550px;
+            margin: 0 auto 30px;
+            padding-top: 50px;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid #333;
+            position: relative;
+            transition: transform 4.5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            background: white;
+        }
+
+        .wheel-segment {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%);
+            transform-origin: center center;
+        }
+
+        .wheel-segment-inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 60px;
+        }
+
+        .wheel-segment span {
+            display: block;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            pointer-events: none;
+            max-height: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #ff4757;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+            z-index: 10;
+        }
+
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: #333;
+            border-radius: 50%;
+            border: 5px solid white;
+            z-index: 5;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .spin-btn {
+            display: block;
+            margin: 0 auto;
+            background: #ff4757;
+            color: white;
+            padding: 20px 50px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(255, 71, 87, 0.4);
+        }
+
+        .spin-btn:hover:not(:disabled) {
+            background: #ee5a6f;
+            transform: scale(1.05);
+        }
+
+        .spin-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .result-modal.show {
+            display: flex;
+        }
+
+        .result-content {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .result-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .result-name {
+            color: #667eea;
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .close-btn {
+            background: #667eea;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .file-info {
+            text-align: center;
+            color: #666;
+            margin-top: 15px;
+            font-size: 0.95em;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .wheel-container {
+                width: 350px;
+                height: 350px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Student Name Spinner</h1>
+        <p class="subtitle">Legacy High School - Chemistry</p>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="upload-section">
+            <input type="file" id="csvFile" accept=".csv">
+            <label for="csvFile" class="upload-btn">📁 Upload Student List (CSV)</label>
+            <button class="template-btn" id="downloadTemplate">⬇️ Download CSV Template</button>
+            <div class="file-info" id="fileInfo"></div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="periodSelect">Class Period:</label>
+                <select id="periodSelect">
+                    <option value="">Select a period...</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="filterType">Filter Type:</label>
+                <select id="filterType">
+                    <option value="startsWith">Starts With Letter</option>
+                    <option value="contains">Contains Letter</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="letterInput">Letter:</label>
+                <input type="text" id="letterInput" maxlength="1" placeholder="Enter a letter">
+            </div>
+        </div>
+
+        <div class="wheel-container">
+            <div class="wheel-pointer"></div>
+            <div class="wheel" id="wheel"></div>
+            <div class="center-circle"></div>
+        </div>
+
+        <button class="spin-btn" id="spinBtn" disabled>SPIN THE WHEEL!</button>
+    </div>
+
+    <div class="result-modal" id="resultModal">
+        <div class="result-content">
+            <h2>Selected Student:</h2>
+            <div class="result-name" id="resultName"></div>
+            <button class="close-btn" id="closeModal">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        let students = [];
+        let currentRotation = 0;
+        let isSpinning = false;
+        let recentlySelected = []; // Track last 5 selected students
+
+        const csvFile = document.getElementById('csvFile');
+        const fileInfo = document.getElementById('fileInfo');
+        const periodSelect = document.getElementById('periodSelect');
+        const filterType = document.getElementById('filterType');
+        const letterInput = document.getElementById('letterInput');
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spinBtn');
+        const resultModal = document.getElementById('resultModal');
+        const resultName = document.getElementById('resultName');
+        const closeModal = document.getElementById('closeModal');
+        const errorMessage = document.getElementById('errorMessage');
+        const downloadTemplate = document.getElementById('downloadTemplate');
+
+        csvFile.addEventListener('change', handleFileUpload);
+        periodSelect.addEventListener('change', updateWheel);
+        filterType.addEventListener('change', updateWheel);
+        letterInput.addEventListener('input', handleLetterInput);
+        spinBtn.addEventListener('click', spinWheel);
+        downloadTemplate.addEventListener('click', downloadCSVTemplate);
+        closeModal.addEventListener('click', () => {
+            resultModal.classList.remove('show');
+        });
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result;
+                    parseCSV(text);
+                    
+                    // Save to localStorage
+                    localStorage.setItem('studentRoster', JSON.stringify(students));
+                    localStorage.setItem('rosterFileName', file.name);
+                    
+                    fileInfo.textContent = `✓ Loaded: ${file.name} (${students.length} students)`;
+                    populatePeriods();
+                    hideError();
+                } catch (error) {
+                    showError('Error reading CSV file. Please check the format.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            students = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const parts = line.split(',').map(part => part.trim().replace(/[^\x20-\x7E]/g, ''));
+                if (parts.length >= 2 && parts[0]) {
+                    students.push({
+                        name: parts[0],
+                        period: parts[1]
+                    });
+                }
+            }
+            
+            console.log('Parsed students:', students);
+        }
+
+        function populatePeriods() {
+            const periods = [...new Set(students.map(s => s.period))].sort();
+            periodSelect.innerHTML = '<option value="">Select a period...</option>';
+            periods.forEach(period => {
+                const option = document.createElement('option');
+                option.value = period;
+                option.textContent = `Period ${period}`;
+                periodSelect.appendChild(option);
+            });
+            
+            periodSelect.value = '';
+            letterInput.value = '';
+            wheel.innerHTML = '';
+            spinBtn.disabled = true;
+        }
+
+        function handleLetterInput(event) {
+            letterInput.value = letterInput.value.toUpperCase();
+            updateWheel();
+        }
+
+        function updateWheel() {
+            const period = periodSelect.value;
+
+            if (!period) {
+                spinBtn.disabled = true;
+                wheel.innerHTML = '';
+                return;
+            }
+
+            let filteredStudents = students.filter(s => s.period === period);
+
+            const letter = letterInput.value.toUpperCase();
+            const type = filterType.value;
+
+            if (letter) {
+                console.log('Filtering with letter:', letter, 'Type:', type);
+                console.log('Students before filter:', filteredStudents.map(s => s.name));
+                
+                if (type === 'startsWith') {
+                    filteredStudents = filteredStudents.filter(s => {
+                        const nameUpper = s.name.toUpperCase();
+                        const starts = nameUpper.startsWith(letter);
+                        console.log(`${s.name} (${nameUpper}) starts with ${letter}:`, starts);
+                        return starts;
+                    });
+                } else {
+                    filteredStudents = filteredStudents.filter(s => 
+                        s.name.toUpperCase().includes(letter)
+                    );
+                }
+                
+                console.log('Students after filter:', filteredStudents.map(s => s.name));
+
+                if (filteredStudents.length === 0) {
+                    showError(`No students found with names that ${type === 'startsWith' ? 'start with' : 'contain'} "${letter}" in Period ${period}.`);
+                    spinBtn.disabled = true;
+                    wheel.innerHTML = '';
+                    return;
+                }
+            }
+
+            hideError();
+            createWheel(filteredStudents);
+            spinBtn.disabled = false;
+        }
+
+        function createWheel(filteredStudents) {
+            wheel.innerHTML = '';
+            const period = periodSelect.value;
+            const allStudentsInPeriod = students.filter(s => s.period === period);
+            const numStudents = allStudentsInPeriod.length;
+            const segmentAngle = 360 / numStudents;
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2', '#E74C3C', '#3498DB', '#2ECC71', '#F39C12', '#9B59B6', '#1ABC9C', '#E67E22', '#16A085'];
+
+            let fontSize;
+            if (numStudents <= 8) {
+                fontSize = '1.2em';
+            } else if (numStudents <= 15) {
+                fontSize = '1em';
+            } else if (numStudents <= 25) {
+                fontSize = '0.85em';
+            } else {
+                fontSize = '0.7em';
+            }
+
+            allStudentsInPeriod.forEach((student, index) => {
+                const isFiltered = filteredStudents.some(fs => fs.name === student.name);
+                
+                const segment = document.createElement('div');
+                segment.className = 'wheel-segment';
+                segment.style.background = isFiltered ? colors[index % colors.length] : 'transparent';
+                
+                const rotation = segmentAngle * index;
+                const skewAngle = 90 - segmentAngle;
+                
+                segment.style.transform = `rotate(${rotation}deg) skewY(-${skewAngle}deg)`;
+
+                const segmentInner = document.createElement('div');
+                segmentInner.className = 'wheel-segment-inner';
+                segmentInner.style.transform = `skewY(${skewAngle}deg) rotate(${segmentAngle / 2}deg)`;
+
+                if (isFiltered) {
+                    const span = document.createElement('span');
+                    span.textContent = student.name;
+                    span.style.fontSize = fontSize;
+                    segmentInner.appendChild(span);
+                }
+                
+                segment.appendChild(segmentInner);
+                wheel.appendChild(segment);
+            });
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            spinBtn.disabled = true;
+
+            const period = periodSelect.value;
+            const letter = letterInput.value.toUpperCase();
+            const type = filterType.value;
+
+            const allStudentsInPeriod = students.filter(s => s.period === period);
+            let filteredStudents = students.filter(s => s.period === period);
+            
+            if (letter) {
+                if (type === 'startsWith') {
+                    filteredStudents = filteredStudents.filter(s => 
+                        s.name.toUpperCase().startsWith(letter)
+                    );
+                } else {
+                    filteredStudents = filteredStudents.filter(s => 
+                        s.name.toUpperCase().includes(letter)
+                    );
+                }
+            }
+
+            // Filter out recently selected students if there are enough other options
+            let availableStudents = filteredStudents.filter(s => 
+                !recentlySelected.includes(s.name)
+            );
+            
+            // If all students have been recently selected, use all filtered students
+            if (availableStudents.length === 0) {
+                availableStudents = filteredStudents;
+                recentlySelected = []; // Reset the history
+            }
+
+            const randomFilteredStudent = availableStudents[Math.floor(Math.random() * availableStudents.length)];
+            const actualIndex = allStudentsInPeriod.findIndex(s => s.name === randomFilteredStudent.name);
+            
+            // Add to recently selected list and keep only last 5
+            recentlySelected.push(randomFilteredStudent.name);
+            if (recentlySelected.length > 5) {
+                recentlySelected.shift(); // Remove oldest entry
+            }
+            
+            const segmentAngle = 360 / allStudentsInPeriod.length;
+            
+            // Calculate the angle to the center of the target wedge
+            // The wedge center is at: (actualIndex * segmentAngle) + (segmentAngle / 2)
+            // We want this to align with the pointer at the top (0 degrees)
+            // So we rotate the wheel by the negative of that angle
+            const wedgeCenterAngle = (actualIndex * segmentAngle) + (segmentAngle / 2);
+            const targetAngle = 360 - wedgeCenterAngle;
+            
+            const spins = 8;
+            const totalRotation = spins * 360 + targetAngle;
+
+            currentRotation += totalRotation;
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+            setTimeout(() => {
+                resultName.textContent = randomFilteredStudent.name;
+                resultModal.classList.add('show');
+                isSpinning = false;
+                spinBtn.disabled = false;
+            }, 4500);
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+        }
+
+        function hideError() {
+            errorMessage.classList.remove('show');
+        }
+
+        function downloadCSVTemplate() {
+            const csvContent = `Name,Period
+John Smith,1
+Sarah Johnson,1
+Michael Brown,2
+Emily Davis,2
+David Wilson,3
+Jessica Martinez,3
+Christopher Lee,4
+Amanda Anderson,4
+Matthew Taylor,5
+Ashley Thomas,5`;
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'student-list-template.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function loadFromLocalStorage() {
+            const savedRoster = localStorage.getItem('studentRoster');
+            const savedFileName = localStorage.getItem('rosterFileName');
+            
+            if (savedRoster) {
+                try {
+                    students = JSON.parse(savedRoster);
+                    fileInfo.textContent = `✓ Auto-loaded: ${savedFileName || 'Saved roster'} (${students.length} students)`;
+                    populatePeriods();
+                } catch (error) {
+                    console.error('Error loading saved roster:', error);
+                }
+            }
+        }
+
+        // Load saved roster on page load
+        window.addEventListener('DOMContentLoaded', loadFromLocalStorage);
+    </script>
+</body>
+</html>
