@@ -609,7 +609,7 @@
                 }
             }
 
-            // Filter out recently selected students if there are enough other options
+            // FIRST: Determine which student to select (avoiding recent selections)
             let availableStudents = filteredStudents.filter(s => 
                 !recentlySelected.includes(s.name)
             );
@@ -620,8 +620,10 @@
                 recentlySelected = []; // Reset the history
             }
 
+            // Randomly select from available students
             const randomFilteredStudent = availableStudents[Math.floor(Math.random() * availableStudents.length)];
-            const actualIndex = allStudentsInPeriod.findIndex(s => s.name === randomFilteredStudent.name);
+            
+            console.log('Selected student:', randomFilteredStudent.name);
             
             // Add to recently selected list and keep only last 5
             recentlySelected.push(randomFilteredStudent.name);
@@ -629,19 +631,39 @@
                 recentlySelected.shift(); // Remove oldest entry
             }
             
-            const segmentAngle = 360 / allStudentsInPeriod.length;
+            // THEN: Find where this student is in the wheel and spin to them
+            const actualIndex = allStudentsInPeriod.findIndex(s => s.name === randomFilteredStudent.name);
+            console.log('Student index in wheel:', actualIndex, 'out of', allStudentsInPeriod.length);
             
-            // Calculate the angle to the center of the target wedge
-            // The wedge center is at: (actualIndex * segmentAngle) + (segmentAngle / 2)
-            // We want this to align with the pointer at the top (0 degrees)
-            // So we rotate the wheel by the negative of that angle
+            const segmentAngle = 360 / allStudentsInPeriod.length;
+            console.log('Segment angle:', segmentAngle);
+            
+            // Calculate where the center of the target wedge is (in the wheel's coordinate system)
             const wedgeCenterAngle = (actualIndex * segmentAngle) + (segmentAngle / 2);
-            const targetAngle = 360 - wedgeCenterAngle;
+            console.log('Wedge center angle (in wheel coords):', wedgeCenterAngle);
+            
+            // Calculate where the wheel currently is (normalized to 0-360)
+            const currentPosition = currentRotation % 360;
+            console.log('Current wheel position (mod 360):', currentPosition);
+            
+            // We want the wedge center to be at 0° (top). 
+            // Target rotation = current + amount needed to bring wedge to top
+            // Amount needed = (360 - wedgeCenterAngle) - currentPosition
+            let rotationNeeded = (360 - wedgeCenterAngle) - currentPosition;
+            
+            // Normalize to positive value and ensure we spin at least 360 degrees
+            while (rotationNeeded < 360) {
+                rotationNeeded += 360;
+            }
             
             const spins = 8;
-            const totalRotation = spins * 360 + targetAngle;
+            const totalRotation = (spins - 1) * 360 + rotationNeeded;
+            console.log('Rotation needed:', rotationNeeded);
+            console.log('Total rotation to add:', totalRotation);
 
             currentRotation += totalRotation;
+            console.log('New current rotation:', currentRotation);
+            
             wheel.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
